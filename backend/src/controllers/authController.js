@@ -1,4 +1,4 @@
-import Owner from '../models/Owner.js'
+import Owner from '../models/owner.js'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import nodemailer from 'nodemailer'
