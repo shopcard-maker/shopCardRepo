@@ -13,7 +13,7 @@ export default function Dashboard() {
   const [shopForm, setShopForm] = useState({
     shopName: '', category: '', slug: '', phone: '',
     whatsapp: '', instagram: '', address: '',
-    timing: '', offer: '', googleMapsUrl: ''
+    timing: '', offer: '', googleMapsUrl: '', upiId: ''
   })
 
   const [productForm, setProductForm] = useState({
@@ -49,6 +49,21 @@ export default function Dashboard() {
       fetchShop()
     } catch (err) {
       setMessage(err.response?.data?.message || 'Error!')
+    }
+  }
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      if (file.size > 500 * 1024) {
+        alert('Image size should be less than 500KB. Please choose a smaller image.')
+        return
+      }
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setProductForm({ ...productForm, image: reader.result })
+      }
+      reader.readAsDataURL(file)
     }
   }
 
@@ -149,6 +164,20 @@ export default function Dashboard() {
       )}
 
       <div className="max-w-3xl mx-auto px-6 py-8">
+        {/* Stats Section */}
+        {shop && (
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex flex-col justify-center shadow-sm">
+              <p className="text-xs font-semibold text-emerald-600 uppercase">👁️ Page Views (Last 30 Days)</p>
+              <h3 className="text-2xl font-bold text-emerald-800 mt-1">{shop.totalVisits || 0}</h3>
+            </div>
+            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex flex-col justify-center shadow-sm">
+              <p className="text-xs font-semibold text-blue-600 uppercase">📈 Active Visitors (This Week)</p>
+              <h3 className="text-2xl font-bold text-blue-800 mt-1">{shop.weeklyVisits || 0}</h3>
+            </div>
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
           {['info', 'products'].map((tab) => (
@@ -184,6 +213,7 @@ export default function Dashboard() {
                 { name: 'timing', label: 'Timing', placeholder: 'Mon-Sat 8AM - 9PM' },
                 { name: 'offer', label: 'Today\'s Offer', placeholder: '10% off on vegetables today!' },
                 { name: 'googleMapsUrl', label: 'Google Maps URL', placeholder: 'https://maps.google.com/...' },
+                { name: 'upiId', label: 'UPI ID for Payments (GPay/PhonePe)', placeholder: 'yourname@okaxis' },
               ].map((field) => (
                 <div key={field.name}>
                   <label className="text-sm font-medium text-gray-700">{field.label}</label>
@@ -226,15 +256,35 @@ export default function Dashboard() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Price</label>
+                  <label className="text-sm font-medium text-gray-700">Price (Optional)</label>
                   <input
                     type="text"
                     value={productForm.price}
                     onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
-                    required
-                    placeholder="₹320"
+                    placeholder="₹320 (leave empty if price on request)"
                     className="mt-1 w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Product Image (Optional)</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer"
+                  />
+                  {productForm.image && (
+                    <div className="mt-2 relative inline-block">
+                      <img src={productForm.image} alt="Preview" className="h-20 w-20 object-cover rounded-lg border" />
+                      <button
+                        type="button"
+                        onClick={() => setProductForm({ ...productForm, image: '' })}
+                        className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-1 text-xs leading-none hover:bg-red-600 shadow-sm cursor-pointer"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <button
                   type="submit"
@@ -259,9 +309,16 @@ export default function Dashboard() {
                       key={product._id}
                       className="flex justify-between items-center border border-gray-100 rounded-lg px-4 py-3"
                     >
-                      <div>
-                        <p className="text-sm font-medium text-gray-800">{product.name}</p>
-                        <p className="text-sm text-green-600 font-semibold">{product.price}</p>
+                      <div className="flex items-center gap-3">
+                        {product.image ? (
+                          <img src={product.image} alt={product.name} className="w-12 h-12 object-cover rounded-lg border" />
+                        ) : (
+                          <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center text-xl">🛍️</div>
+                        )}
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{product.name}</p>
+                          <p className="text-sm text-green-600 font-semibold">{product.price || 'Price on request'}</p>
+                        </div>
                       </div>
                       <button
                         onClick={() => handleDeleteProduct(product._id)}

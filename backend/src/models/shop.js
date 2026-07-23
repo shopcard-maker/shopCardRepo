@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  price: { type: String, required: true },
+  price: { type: String, default: '' },
   image: { type: String, default: '' }
 })
 
@@ -24,7 +24,9 @@ const shopSchema = new mongoose.Schema({
   isOpen: { type: Boolean, default: true },
   offer: { type: String, default: '' },
   products: [productSchema],
-  googleMapsUrl: { type: String, default: '' }
+  googleMapsUrl: { type: String, default: '' },
+  upiId: { type: String, default: '' },
+  visits: { type: [Date], default: [] }
 }, { timestamps: true })
 
 export default mongoose.model('Shop', shopSchema)

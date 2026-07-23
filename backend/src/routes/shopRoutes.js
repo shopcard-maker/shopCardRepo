@@ -5,7 +5,8 @@ import {
   updateShop,
   addProduct,
   deleteProduct,
-  getShopBySlug
+  getShopBySlug,
+  recordVisit
 } from '../controllers/shopController.js'
 import authMiddleware from '../middleware/auth.js'
 
@@ -19,6 +20,7 @@ router.post('/product/add', authMiddleware, addProduct)
 router.delete('/product/:productId', authMiddleware, deleteProduct)
 
 // Public route (customer page)
+router.post('/:slug/visit', recordVisit)
 router.get('/:slug', getShopBySlug)
 
 export default router
