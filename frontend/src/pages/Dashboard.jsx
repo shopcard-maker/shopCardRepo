@@ -89,6 +89,24 @@ export default function Dashboard() {
     }
   }
 
+  const downloadQr = (elementId, slug) => {
+    const svg = document.getElementById(elementId)
+    const svgData = new XMLSerializer().serializeToString(svg)
+    const canvas = document.createElement('canvas')
+    canvas.width = 300
+    canvas.height = 300
+    const ctx = canvas.getContext('2d')
+    const img = new Image()
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, 300, 300)
+      const a = document.createElement('a')
+      a.download = `${slug}-qr.png`
+      a.href = canvas.toDataURL('image/png')
+      a.click()
+    }
+    img.src = 'data:image/svg+xml;base64,' + btoa(svgData)
+  }
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <p className="text-gray-500">Loading...</p>
@@ -98,60 +116,95 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b px-6 py-4 flex justify-between items-center">
-        <div>
-          <h1 className="text-xl font-bold text-gray-800">ShopCard Dashboard</h1>
-          <p className="text-sm text-gray-500">Welcome, {owner?.name}</p>
-        </div>
-         <div className="flex gap-3 items-center">
+      <div className="bg-white border-b px-4 sm:px-6 py-4">
+        {/* Mobile layout (stacked) */}
+        <div className="flex flex-col gap-4 sm:hidden">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold text-gray-800">ShopCard Dashboard</h1>
+              <p className="text-sm text-gray-500">Welcome, {owner?.name}</p>
+            </div>
+            <button
+              onClick={logout}
+              className="text-sm text-red-500 border border-red-200 px-4 py-2 rounded-lg"
+            >
+              Logout
+            </button>
+          </div>
+
           {shop && (
-            
-         <a href={`/shop/${shop.slug}`}
-  target="_blank"
-  className="text-sm bg-green-50 text-green-600 px-4 py-2 rounded-lg font-medium"
->
-  View Shop Page
-</a>
-)}
-{shop && (
-<div className="flex flex-col items-center gap-1">
-    <QRCodeSVG
-      id="qr-code"
-      value={`http://localhost:5173/shop/${shop.slug}`}
-      size={80}
-      className="border p-1 rounded-lg bg-white"
-    />
-    <p className="text-xs text-gray-400">QR Code</p>
-    <button
-      onClick={() => {
-        const svg = document.getElementById('qr-code')
-        const svgData = new XMLSerializer().serializeToString(svg)
-        const canvas = document.createElement('canvas')
-        canvas.width = 300
-        canvas.height = 300
-        const ctx = canvas.getContext('2d')
-        const img = new Image()
-        img.onload = () => {
-          ctx.drawImage(img, 0, 0, 300, 300)
-          const a = document.createElement('a')
-          a.download = `${shop.slug}-qr.png`
-          a.href = canvas.toDataURL('image/png')
-          a.click()
-        }
-        img.src = 'data:image/svg+xml;base64,' + btoa(svgData)
-      }}
-      className="text-xs bg-green-500 text-white px-3 py-1 rounded-lg cursor-pointer"
-    >
-      Download QR
-    </button>
-  </div>
+            <div className="flex items-center justify-between gap-4">
+              <a
+                href={`/shop/${shop.slug}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm bg-green-50 text-green-600 px-4 py-2 rounded-lg font-medium whitespace-nowrap"
+              >
+                View Shop Page
+              </a>
+
+              <div className="flex flex-col items-center gap-1">
+                <QRCodeSVG
+                  id="qr-code-mobile"
+                  value={`${window.location.origin}/shop/${shop.slug}`}
+                  size={64}
+                  className="border p-1 rounded-lg bg-white"
+                />
+                <button
+                  onClick={() => downloadQr('qr-code-mobile', shop.slug)}
+                  className="text-xs bg-green-500 text-white px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap"
+                >
+                  Download QR
+                </button>
+              </div>
+            </div>
           )}
-          <button
-            onClick={logout}
-            className="text-sm text-red-500 border border-red-200 px-4 py-2 rounded-lg"
-          >
-            Logout
-          </button>
+        </div>
+
+        {/* Desktop layout: QR left, title center, actions right */}
+        <div className="hidden sm:grid grid-cols-3 items-center">
+          <div>
+            {shop && (
+              <div className="flex items-center gap-2">
+                <QRCodeSVG
+                  id="qr-code-desktop"
+                  value={`${window.location.origin}/shop/${shop.slug}`}
+                  size={64}
+                  className="border p-1 rounded-lg bg-white"
+                />
+                <button
+                  onClick={() => downloadQr('qr-code-desktop', shop.slug)}
+                  className="text-xs bg-green-500 text-white px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap"
+                >
+                  Download QR
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="text-center">
+            <h1 className="text-xl font-bold text-gray-800">ShopCard Dashboard</h1>
+            <p className="text-sm text-gray-500">Welcome, {owner?.name}</p>
+          </div>
+
+          <div className="flex items-center justify-end gap-3">
+            {shop && (
+              <a
+                href={`/shop/${shop.slug}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm bg-green-50 text-green-600 px-4 py-2 rounded-lg font-medium whitespace-nowrap"
+              >
+                View Shop Page
+              </a>
+            )}
+            <button
+              onClick={logout}
+              className="text-sm text-red-500 border border-red-200 px-4 py-2 rounded-lg"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </div>
 
