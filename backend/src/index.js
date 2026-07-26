@@ -4,6 +4,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import authRoutes from './routes/authRoutes.js'
 import shopRoutes from './routes/shopRoutes.js'
+import adminRoutes from './routes/adminRoutes.js'
 
 dotenv.config()
 
@@ -14,6 +15,7 @@ app.use(express.json({ limit: '2mb' }))
 
 app.use('/api/auth', authRoutes)
 app.use('/api/shop', shopRoutes)
+app.use('/api/admin', adminRoutes)
 
 app.get('/', (req, res) => {
   res.json({ message: 'ShopCard API running!' })
