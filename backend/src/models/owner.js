@@ -13,6 +13,10 @@ const ownerSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true
+  },
+  isActive: {
+    type: Boolean,
+    default: false
   }
 }, { timestamps: true })
 

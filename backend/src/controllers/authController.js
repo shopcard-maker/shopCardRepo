@@ -11,12 +11,9 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: 'Email already exists' })
     }
     const hashedPassword = await bcrypt.hash(password, 10)
-    const owner = await Owner.create({ name, email, password: hashedPassword })
-    const token = jwt.sign({ id: owner._id }, process.env.JWT_SECRET, { expiresIn: '7d' })
+    await Owner.create({ name, email, password: hashedPassword })
     res.status(201).json({
-      message: 'Owner registered successfully',
-      token,
-      owner: { id: owner._id, name: owner.name, email: owner.email }
+      message: 'Registered! Your account is pending admin approval — you will be able to login once approved.'
     })
   } catch (error) {
     res.status(500).json({ message: error.message })
@@ -34,6 +31,9 @@ export const login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, owner.password)
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid email or password' })
+    }
+    if (!owner.isActive) {
+      return res.status(403).json({ message: 'Your account is pending admin approval' })
     }
     const token = jwt.sign({ id: owner._id }, process.env.JWT_SECRET, { expiresIn: '7d' })
     res.json({

@@ -29,7 +29,7 @@ export const createOwner = async (req, res) => {
       return res.status(400).json({ message: 'Email already exists' })
     }
     const hashedPassword = await bcrypt.hash(password, 10)
-    const owner = await Owner.create({ name, email, password: hashedPassword })
+    const owner = await Owner.create({ name, email, password: hashedPassword, isActive: true })
     res.status(201).json({ message: 'User created successfully', owner: { id: owner._id, name: owner.name, email: owner.email } })
   } catch (error) {
     res.status(500).json({ message: error.message })
@@ -39,7 +39,7 @@ export const createOwner = async (req, res) => {
 // Get all registered owners
 export const getAllOwners = async (req, res) => {
   try {
-    const owners = await Owner.find().select('name email createdAt').sort({ createdAt: -1 })
+    const owners = await Owner.find().select('name email isActive createdAt').sort({ createdAt: -1 })
     res.json({ total: owners.length, owners })
   } catch (error) {
     res.status(500).json({ message: error.message })
@@ -59,6 +59,20 @@ export const updateOwner = async (req, res) => {
     if (password) owner.password = await bcrypt.hash(password, 10)
     await owner.save()
     res.json({ message: 'User updated successfully', owner: { id: owner._id, name: owner.name, email: owner.email } })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+// Enable / disable an owner's login access
+export const setOwnerStatus = async (req, res) => {
+  try {
+    const { isActive } = req.body
+    const owner = await Owner.findByIdAndUpdate(req.params.id, { isActive }, { new: true }).select('name email isActive createdAt')
+    if (!owner) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+    res.json({ message: `User ${isActive ? 'enabled' : 'disabled'} successfully`, owner })
   } catch (error) {
     res.status(500).json({ message: error.message })
   }

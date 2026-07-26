@@ -62,6 +62,15 @@ export default function AdminDashboard() {
     }
   }
 
+  const toggleStatus = async (id, isActive) => {
+    try {
+      await adminApi.patch(`/admin/owners/${id}/status`, { isActive: !isActive })
+      loadOwners()
+    } catch (err) {
+      setError(err.response?.data?.message || 'Status update failed')
+    }
+  }
+
   const handleDelete = async (id, name) => {
     if (!window.confirm(`Delete "${name}"? This will also remove their shop. This cannot be undone.`)) return
     try {
@@ -185,11 +194,22 @@ export default function AdminDashboard() {
                 ) : (
                   <div className="flex items-center justify-between gap-4">
                     <div className="min-w-0">
-                      <p className="font-semibold text-gray-800 truncate">{owner.name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-gray-800 truncate">{owner.name}</p>
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${owner.isActive ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}`}>
+                          {owner.isActive ? 'Active' : 'Pending'}
+                        </span>
+                      </div>
                       <p className="text-sm text-gray-500 truncate">{owner.email}</p>
                       <p className="text-sm text-gray-400 tracking-widest">••••••••</p>
                     </div>
                     <div className="flex gap-2 shrink-0">
+                      <button
+                        onClick={() => toggleStatus(owner._id, owner.isActive)}
+                        className={`text-sm font-medium px-3 py-1.5 rounded-lg cursor-pointer ${owner.isActive ? 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700' : 'bg-green-50 hover:bg-green-100 text-green-700'}`}
+                      >
+                        {owner.isActive ? 'Disable' : 'Enable'}
+                      </button>
                       <button onClick={() => startEdit(owner)} className="bg-blue-50 hover:bg-blue-100 text-blue-600 text-sm font-medium px-3 py-1.5 rounded-lg cursor-pointer">Edit</button>
                       <button onClick={() => handleDelete(owner._id, owner.name)} className="bg-red-50 hover:bg-red-100 text-red-600 text-sm font-medium px-3 py-1.5 rounded-lg cursor-pointer">Delete</button>
                     </div>

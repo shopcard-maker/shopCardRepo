@@ -6,6 +6,7 @@ export default function Register() {
   const navigate = useNavigate()
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
@@ -16,9 +17,11 @@ export default function Register() {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setMessage('')
     try {
-      await API.post('/auth/register', form)
-      navigate('/login')
+      const res = await API.post('/auth/register', form)
+      setMessage(res.data.message)
+      setTimeout(() => navigate('/login'), 2500)
     } catch (err) {
       setError(err.response?.data?.message || 'Something went wrong')
     } finally {
@@ -31,6 +34,12 @@ export default function Register() {
       <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold text-gray-800 mb-2">Create Account</h1>
         <p className="text-gray-500 text-sm mb-6">Register your shop owner account</p>
+
+        {message && (
+          <div className="bg-green-50 text-green-700 text-sm px-4 py-3 rounded-lg mb-4">
+            {message}
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-4">
