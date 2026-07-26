@@ -17,6 +17,25 @@ export const adminLogin = async (req, res) => {
   }
 }
 
+// Create a new owner
+export const createOwner = async (req, res) => {
+  try {
+    const { name, email, password } = req.body
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'Name, email and password are required' })
+    }
+    const existingOwner = await Owner.findOne({ email })
+    if (existingOwner) {
+      return res.status(400).json({ message: 'Email already exists' })
+    }
+    const hashedPassword = await bcrypt.hash(password, 10)
+    const owner = await Owner.create({ name, email, password: hashedPassword })
+    res.status(201).json({ message: 'User created successfully', owner: { id: owner._id, name: owner.name, email: owner.email } })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
 // Get all registered owners
 export const getAllOwners = async (req, res) => {
   try {

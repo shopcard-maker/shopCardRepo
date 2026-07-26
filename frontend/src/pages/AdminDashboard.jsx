@@ -10,6 +10,8 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState({ name: '', email: '', password: '' })
+  const [newUser, setNewUser] = useState({ name: '', email: '', password: '' })
+  const [creating, setCreating] = useState(false)
 
   const loadOwners = async () => {
     setLoading(true)
@@ -70,6 +72,21 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleCreate = async (e) => {
+    e.preventDefault()
+    setCreating(true)
+    setError('')
+    try {
+      await adminApi.post('/admin/owners', newUser)
+      setNewUser({ name: '', email: '', password: '' })
+      loadOwners()
+    } catch (err) {
+      setError(err.response?.data?.message || 'Create failed')
+    } finally {
+      setCreating(false)
+    }
+  }
+
   const logout = () => {
     localStorage.removeItem('adminToken')
     navigate('/admin/login')
@@ -89,6 +106,42 @@ export default function AdminDashboard() {
         {error && (
           <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-4">{error}</div>
         )}
+
+        <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+          <h2 className="font-semibold text-gray-800 mb-3">Add New User</h2>
+          <form onSubmit={handleCreate} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <input
+              value={newUser.name}
+              onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+              placeholder="Name"
+              required
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+            <input
+              type="email"
+              value={newUser.email}
+              onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+              placeholder="Email"
+              required
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+            <input
+              type="password"
+              value={newUser.password}
+              onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+              placeholder="Password"
+              required
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+            <button
+              type="submit"
+              disabled={creating}
+              className="sm:col-span-3 bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 rounded-lg transition cursor-pointer"
+            >
+              {creating ? 'Creating...' : 'Create User'}
+            </button>
+          </form>
+        </div>
 
         {loading ? (
           <p className="text-gray-500 text-sm">Loading...</p>
